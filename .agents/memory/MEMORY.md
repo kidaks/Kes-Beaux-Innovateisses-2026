@@ -1,0 +1,1 @@
+- [Monitoring prototype scope](prototype-scope.md) — keep all risk scores, alerts, and notifications clearly labeled as educational demo data, never real fire detection.

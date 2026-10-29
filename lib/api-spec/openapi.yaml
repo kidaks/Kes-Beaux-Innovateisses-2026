@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Monitoring API for the Kes Beaux Innovateisses training prototype
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: monitoring
+    description: Stations, telemetry, alerts, and dashboard data
+  - name: simulation
+    description: Demonstration measurement scenarios
+  - name: auth
+    description: Demo account sessions and role management
 paths:
   /healthz:
     get:
@@ -24,6 +30,309 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [monitoring]
+      summary: Get current monitoring summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /stations:
+    get:
+      operationId: getStations
+      tags: [monitoring]
+      summary: List monitoring stations
+      responses:
+        "200":
+          description: Monitoring stations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Station"
+    post:
+      operationId: createStation
+      tags: [monitoring]
+      summary: Create a monitoring station
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StationInput"
+      responses:
+        "201":
+          description: Created station
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Station"
+        "400":
+          description: Invalid station data
+  /stations/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      operationId: getStation
+      tags: [monitoring]
+      summary: Get one station
+      responses:
+        "200":
+          description: Station details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Station"
+        "404":
+          description: Station not found
+    patch:
+      operationId: updateStation
+      tags: [monitoring]
+      summary: Update a station
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StationUpdate"
+      responses:
+        "200":
+          description: Updated station
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Station"
+        "400":
+          description: Invalid station data
+        "404":
+          description: Station not found
+    delete:
+      operationId: deleteStation
+      tags: [monitoring]
+      summary: Delete a station
+      responses:
+        "204":
+          description: Station deleted
+        "404":
+          description: Station not found
+  /stations/{id}/measurements:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      operationId: getStationMeasurements
+      tags: [monitoring]
+      summary: Get recent station measurements
+      responses:
+        "200":
+          description: Measurement history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Measurement"
+        "404":
+          description: Station not found
+    post:
+      operationId: addStationMeasurement
+      tags: [monitoring]
+      summary: Save a station measurement and calculate risk
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeasurementInput"
+      responses:
+        "201":
+          description: Saved measurement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Measurement"
+        "400":
+          description: Invalid measurement
+        "404":
+          description: Station not found
+  /alerts:
+    get:
+      operationId: getAlerts
+      tags: [monitoring]
+      summary: List published alerts
+      responses:
+        "200":
+          description: Published alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+  /alerts/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    patch:
+      operationId: updateAlert
+      tags: [monitoring]
+      summary: Update alert handling status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlertUpdate"
+      responses:
+        "200":
+          description: Updated alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+        "404":
+          description: Alert not found
+  /settings:
+    get:
+      operationId: getMonitoringSettings
+      tags: [monitoring]
+      summary: Get monitoring settings
+      responses:
+        "200":
+          description: Current settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitoringSettings"
+    patch:
+      operationId: updateMonitoringSettings
+      tags: [monitoring]
+      summary: Update monitoring settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MonitoringSettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitoringSettings"
+  /simulation/reset:
+    post:
+      operationId: resetSimulation
+      tags: [simulation]
+      summary: Restore initial demonstration readings without deleting history
+      responses:
+        "200":
+          description: Reset readings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Station"
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Check the current demo session
+      responses:
+        "200":
+          description: Session state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentUser"
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Sign in to a demonstration account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Signed-in user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Invalid credentials
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: End the current session
+      responses:
+        "204":
+          description: Signed out
+  /users:
+    get:
+      operationId: getUsers
+      tags: [auth]
+      summary: List users for administrator role management
+      responses:
+        "200":
+          description: User accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+  /users/{id}:
+    patch:
+      operationId: updateUserRole
+      tags: [auth]
+      summary: Change a user's role
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRoleUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid role change
+        "404":
+          description: User not found
 components:
   schemas:
     HealthStatus:
@@ -33,4 +342,144 @@ components:
           type: string
       required:
         - status
+    RiskLevel:
+      type: string
+      enum: [low, medium, high, critical]
+    DeviceStatus:
+      type: string
+      enum: [working, faulty, offline]
+    Scenario:
+      type: string
+      enum: [normal, dangerous]
+    AlertStatus:
+      type: string
+      enum: [new, in_progress, processed, resolved]
+    UserRole:
+      type: string
+      enum: [guest, operator, admin]
+    Station:
+      type: object
+      required: [id, name, latitude, longitude, stationType, deviceStatus, temperature, humidity, smoke, risk, riskLevel, lastMeasuredAt, scenario]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        latitude: { type: number }
+        longitude: { type: number }
+        stationType: { type: string }
+        deviceStatus: { $ref: "#/components/schemas/DeviceStatus" }
+        temperature: { type: number }
+        humidity: { type: number }
+        smoke: { type: number }
+        risk: { type: integer, minimum: 0, maximum: 100 }
+        riskLevel: { $ref: "#/components/schemas/RiskLevel" }
+        lastMeasuredAt: { type: string, format: date-time }
+        scenario: { $ref: "#/components/schemas/Scenario" }
+    StationInput:
+      type: object
+      required: [name, latitude, longitude, stationType]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        latitude: { type: number, minimum: -90, maximum: 90 }
+        longitude: { type: number, minimum: -180, maximum: 180 }
+        stationType: { type: string, minLength: 2, maxLength: 80 }
+        deviceStatus: { $ref: "#/components/schemas/DeviceStatus" }
+        scenario: { $ref: "#/components/schemas/Scenario" }
+    StationUpdate:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100 }
+        latitude: { type: number, minimum: -90, maximum: 90 }
+        longitude: { type: number, minimum: -180, maximum: 180 }
+        stationType: { type: string, minLength: 2, maxLength: 80 }
+        deviceStatus: { $ref: "#/components/schemas/DeviceStatus" }
+        scenario: { $ref: "#/components/schemas/Scenario" }
+    Measurement:
+      type: object
+      required: [id, stationId, temperature, humidity, smoke, risk, riskLevel, recordedAt]
+      properties:
+        id: { type: integer }
+        stationId: { type: integer }
+        temperature: { type: number }
+        humidity: { type: number }
+        smoke: { type: number }
+        risk: { type: integer, minimum: 0, maximum: 100 }
+        riskLevel: { $ref: "#/components/schemas/RiskLevel" }
+        recordedAt: { type: string, format: date-time }
+    MeasurementInput:
+      type: object
+      required: [temperature, humidity, smoke]
+      properties:
+        temperature: { type: number, minimum: -40, maximum: 60 }
+        humidity: { type: number, minimum: 0, maximum: 100 }
+        smoke: { type: number, minimum: 0, maximum: 100 }
+    Alert:
+      type: object
+      required: [id, stationId, stationName, severity, risk, reason, createdAt, status, published]
+      properties:
+        id: { type: integer }
+        stationId: { type: integer }
+        stationName: { type: string }
+        severity: { $ref: "#/components/schemas/RiskLevel" }
+        risk: { type: integer }
+        reason: { type: string }
+        createdAt: { type: string, format: date-time }
+        status: { $ref: "#/components/schemas/AlertStatus" }
+        published: { type: boolean }
+    AlertUpdate:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: "#/components/schemas/AlertStatus" }
+    DashboardSummary:
+      type: object
+      required: [totalStations, activeStations, activeAlerts, averageRisk, lastUpdated, systemState, highRiskStations]
+      properties:
+        totalStations: { type: integer }
+        activeStations: { type: integer }
+        activeAlerts: { type: integer }
+        averageRisk: { type: integer }
+        lastUpdated: { type: ["string", "null"], format: date-time }
+        systemState: { type: string, enum: [online, degraded] }
+        highRiskStations:
+          type: array
+          items: { $ref: "#/components/schemas/Station" }
+    MonitoringSettings:
+      type: object
+      required: [alertThreshold, updatedAt]
+      properties:
+        alertThreshold: { type: integer, minimum: 30, maximum: 100 }
+        updatedAt: { type: string, format: date-time }
+    MonitoringSettingsUpdate:
+      type: object
+      required: [alertThreshold]
+      properties:
+        alertThreshold: { type: integer, minimum: 30, maximum: 100 }
+    User:
+      type: object
+      required: [id, username, role]
+      properties:
+        id: { type: integer }
+        username: { type: string }
+        role: { $ref: "#/components/schemas/UserRole" }
+    CurrentUser:
+      type: object
+      required: [authenticated, user]
+      properties:
+        authenticated: { type: boolean }
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/User"
+            - type: "null"
+    LoginInput:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, minLength: 2 }
+        password: { type: string, minLength: 8 }
+    UserRoleUpdate:
+      type: object
+      required: [role]
+      properties:
+        role: { $ref: "#/components/schemas/UserRole" }
 

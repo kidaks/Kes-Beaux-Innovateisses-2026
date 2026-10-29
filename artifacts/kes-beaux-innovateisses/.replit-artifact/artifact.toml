@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Kes Beaux Innovateisses"
+description = "A Russian-language forest-fire monitoring training prototype with a live dashboard, station map, demonstration telemetry, incident alerts, and role-aware operations."
+version = "1.0.0"
+id = "artifacts/kes-beaux-innovateisses"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25403
+
+[services.development]
+run = "pnpm --filter @workspace/kes-beaux-innovateisses run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/kes-beaux-innovateisses", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/kes-beaux-innovateisses/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25403"
+BASE_PATH = "/"
